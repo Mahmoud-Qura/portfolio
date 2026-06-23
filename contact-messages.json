@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1781545602575",
+    "createdAt": "2026-06-15T17:46:42.575Z",
+    "name": "BrowserDirect",
+    "email": "browserdirect@example.com",
+    "message": "Testing browser direct fetch."
+  },
+  {
+    "id": "1781545591479",
+    "createdAt": "2026-06-15T17:46:31.479Z",
+    "name": "BrowserDirect",
+    "email": "browserdirect@example.com",
+    "message": "Testing browser direct fetch."
+  },
+  {
+    "id": "1781545539289",
+    "createdAt": "2026-06-15T17:45:39.289Z",
+    "name": "BrowserDirect",
+    "email": "browserdirect@example.com",
+    "message": "Testing browser direct fetch."
+  },
+  {
+    "id": "1781545249378",
+    "createdAt": "2026-06-15T17:40:49.378Z",
+    "name": "Direct Browser",
+    "email": "browser@example.com",
+    "message": "Direct browser fetch test."
+  },
+  {
+    "id": "1781544809828",
+    "createdAt": "2026-06-15T17:33:29.828Z",
+    "name": "Test",
+    "email": "test@example.com",
+    "message": "Hello from node"
+  }
+]

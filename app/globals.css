@@ -1,0 +1,104 @@
+/* ─── globals.css ────────────────────────────────────────────────────────────
+   • Imports Google Fonts (Playfair Display + DM Sans + JetBrains Mono)
+   • Defines CSS custom properties for light/dark mode
+   • Base resets and smooth transitions
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+/* Light mode defaults — warm cream palette */
+:root {
+  --bg-primary:   #fdf9f3;   /* warm cream page background */
+  --bg-secondary: #f5f0e8;   /* slightly darker for cards / sections */
+  --bg-card:      #ffffff;   /* card background */
+  --text-primary: #18181b;   /* near-black main text */
+  --text-secondary: #52525b; /* muted secondary text */
+  --accent:       #6366f1;   /* indigo accent */
+  --accent-hover: #4f46e5;   /* darker on hover */
+  --border:       #e4e4e7;   /* subtle dividers */
+  --shadow-card:  0 2px 12px rgba(24,24,27,0.08);
+  --shadow-hover: 0 8px 28px rgba(24,24,27,0.14);
+}
+
+/* Dark mode overrides — triggered by class="dark" on <html> (next-themes) */
+.dark {
+  --bg-primary:   #18181b;   /* deep charcoal */
+  --bg-secondary: #27272a;   /* slightly lighter for section contrast */
+  --bg-card:      #1f1f23;   /* card background */
+  --text-primary: #f4f4f5;   /* near-white */
+  --text-secondary: #a1a1aa; /* muted zinc */
+  --accent:       #818cf8;   /* indigo shifted lighter for dark bg legibility */
+  --accent-hover: #6366f1;
+  --border:       #3f3f46;
+  --shadow-card:  0 2px 12px rgba(0,0,0,0.45);
+  --shadow-hover: 0 8px 28px rgba(0,0,0,0.6);
+}
+
+/* ── Base Styles ───────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Smooth color transitions when toggling light/dark */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Typography Utilities ──────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Accent Color Utility ──────────────────────────────────────────────────── */
+.text-accent    { color: var(--accent); }
+.bg-accent      { background-color: var(--accent); }
+.border-accent  { border-color: var(--accent); }
+
+/* ── Custom Scrollbar — subtle and minimal ─────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ── Fade-up animation (used on page sections) ─────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.65s ease forwards;
+}
+
+/* Stagger delays for sequential reveals */
+.delay-100 { animation-delay: 0.1s; opacity: 0; }
+.delay-200 { animation-delay: 0.2s; opacity: 0; }
+.delay-300 { animation-delay: 0.3s; opacity: 0; }
+.delay-400 { animation-delay: 0.4s; opacity: 0; }
+.delay-500 { animation-delay: 0.5s; opacity: 0; }
+
+/* ── Focus Ring — accessible and on-brand ──────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
