@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Trash2, RefreshCcw } from "lucide-react";
 import Button from "@/components/Button";
-import type { ContactMessage } from "@/lib/contact";
+import type { ContactMessage } from "@/lib/contactStore";
 
 interface Props {
   initialMessages: ContactMessage[];

@@ -2,25 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { deleteContactMessage, getContactMessages, saveContactMessage } from "@/lib/contactStore";
 import { sendContactNotification } from "@/lib/email";
 import { sendTelegramNotification } from "@/lib/telegram";
-import { isContactSubmission } from "@/lib/contact";
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET ?? "admin-secret";
 
 function getRequestSecret(request: NextRequest) {
-  return (
-    request.nextUrl.searchParams.get("adminSecret") ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
-    ""
-  );
+  const fromQuery = request.nextUrl.searchParams.get("adminSecret");
+  const authHeader = request.headers.get("authorization");
+  const fromHeader = authHeader?.replace(/^Bearer\s+/i, "");
+  return fromQuery || fromHeader || "";
 }
 
 function isAdmin(request: NextRequest) {
   return getRequestSecret(request) === ADMIN_SECRET;
-}
-
-function getTelegramQrUrl() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "");
-  return process.env.TELEGRAM_QR_URL ?? (baseUrl ? `${baseUrl}/qr.png` : undefined);
 }
 
 export async function GET(request: NextRequest) {
@@ -52,22 +45,25 @@ export async function DELETE(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: unknown = await request.json();
+    const body = await request.json();
+    const { name, email, message } = body;
 
-    if (!isContactSubmission(body)) {
+    if (!name || !email || !message) {
       return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
     }
 
-    const saved = await saveContactMessage(body);
+    const saved = await saveContactMessage({ name, email, message });
 
     try {
-      await sendContactNotification(body);
+      await sendContactNotification({ name, email, message });
     } catch (sendError) {
       console.warn("Contact notification failed:", sendError);
     }
 
     try {
-      await sendTelegramNotification(body, getTelegramQrUrl());
+      // prefer an explicit TELEGRAM_QR_URL, otherwise try to use the public base url + /qr.png
+      const qrUrl = process.env.TELEGRAM_QR_URL ?? (process.env.NEXT_PUBLIC_BASE_URL ? `${process.env.NEXT_PUBLIC_BASE_URL.replace(/\/$/, "")}/qr.png` : undefined);
+      await sendTelegramNotification({ name, email, message }, qrUrl);
     } catch (tgErr) {
       console.warn("Telegram notification failed:", tgErr);
     }
