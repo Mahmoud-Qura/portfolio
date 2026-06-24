@@ -1,13 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-
-export interface ContactMessage {
-  id: string;
-  name: string;
-  email: string;
-  message: string;
-  createdAt: string;
-}
+import type { ContactMessage, ContactSubmission } from "@/lib/contact";
 
 const dataFile = path.resolve(process.cwd(), "contact-messages.json");
 
@@ -34,7 +27,7 @@ export async function getContactMessages() {
   return readMessages();
 }
 
-export async function saveContactMessage(message: Omit<ContactMessage, "id" | "createdAt">) {
+export async function saveContactMessage(message: ContactSubmission) {
   const messages = await readMessages();
   const newMessage: ContactMessage = {
     id: String(Date.now()),

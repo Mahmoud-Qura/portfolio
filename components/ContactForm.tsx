@@ -1,57 +1,58 @@
-// ─── components/ContactForm.tsx ───────────────────────────────────────────────
-// Client Component: handles form state, validation, and submission UX.
-// Uses controlled inputs + simple in-component validation (no library needed
-// for 3 fields). Replace the "submit" handler with a real API call or
-// a service like Formspree / Resend when going to production.
-// ─────────────────────────────────────────────────────────────────────────────
+﻿"use client";
 
-"use client";
-
-import { useState, FormEvent } from "react";
-import { Send, CheckCircle2, Loader2 } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { CheckCircle2, Loader2, Send } from "lucide-react";
 import Button from "./Button";
+import {
+  type ContactErrors,
+  type ContactField,
+  type ContactSubmission,
+  validateContactSubmission,
+} from "@/lib/contact";
 
-// ── Form State Types ──────────────────────────────────────────────────────────
-type FormData   = { name: string; email: string; message: string };
-type FormErrors = Partial<FormData>;
-type Status     = "idle" | "submitting" | "success" | "error";
+type Status = "idle" | "submitting" | "success" | "error";
 
-// ── Validation ────────────────────────────────────────────────────────────────
-function validate(data: FormData): FormErrors {
-  const errors: FormErrors = {};
-  if (!data.name.trim())          errors.name    = "Name is required.";
-  if (!data.email.trim())         errors.email   = "Email is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
-                                  errors.email   = "Enter a valid email address.";
-  if (!data.message.trim())       errors.message = "Message is required.";
-  else if (data.message.length < 10)
-                                  errors.message = "Message must be at least 10 characters.";
-  return errors;
-}
+const initialForm: ContactSubmission = {
+  name: "",
+  email: "",
+  message: "",
+};
 
-// ─────────────────────────────────────────────────────────────────────────────
+type FieldProps = {
+  label: string;
+  id: ContactField;
+  type: string;
+  value: string;
+  onChange: (value: string) => void;
+  error?: string;
+  placeholder?: string;
+  required?: boolean;
+};
+
 export default function ContactForm() {
-  const [formData, setFormData] = useState<FormData>({ name: "", email: "", message: "" });
-  const [errors,   setErrors]   = useState<FormErrors>({});
-  const [status,   setStatus]   = useState<Status>("idle");
+  const [formData, setFormData] = useState<ContactSubmission>(initialForm);
+  const [errors, setErrors] = useState<ContactErrors>({});
+  const [status, setStatus] = useState<Status>("idle");
 
-  // ── Update a single field ──────────────────────────────────────────────────
-  const update = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error on change
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  const updateField = (field: ContactField, value: string) => {
+    setFormData((current) => ({ ...current, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((current) => ({ ...current, [field]: undefined }));
+    }
   };
 
-  // ── Submit handler ─────────────────────────────────────────────────────────
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const validationErrors = validate(formData);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const validationErrors = validateContactSubmission(formData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
     setStatus("submitting");
+
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
@@ -59,19 +60,19 @@ export default function ContactForm() {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as { error?: string };
       if (!response.ok || result.error) {
         throw new Error(result.error || "Failed to send message");
       }
 
       setStatus("success");
-      setFormData({ name: "", email: "", message: "" });
+      setFormData(initialForm);
+      setErrors({});
     } catch {
       setStatus("error");
     }
   };
 
-  // ── Success state ──────────────────────────────────────────────────────────
   if (status === "success") {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16 text-center bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl shadow-[var(--shadow-card)]">
@@ -89,38 +90,34 @@ export default function ContactForm() {
     );
   }
 
-  // ── Form state ─────────────────────────────────────────────────────────────
   return (
     <form
       onSubmit={handleSubmit}
       noValidate
       className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-8 shadow-[var(--shadow-card)] space-y-6"
     >
-      {/* ── Name ───────────────────────────────────────────────────────── */}
       <Field
         label="Your Name"
         id="name"
         type="text"
         value={formData.name}
-        onChange={(v) => update("name", v)}
+        onChange={(value) => updateField("name", value)}
         error={errors.name}
         placeholder="Jane Smith"
         required
       />
 
-      {/* ── Email ──────────────────────────────────────────────────────── */}
       <Field
         label="Email Address"
         id="email"
         type="email"
         value={formData.email}
-        onChange={(v) => update("email", v)}
+        onChange={(value) => updateField("email", value)}
         error={errors.email}
         placeholder="jane@example.com"
         required
       />
 
-      {/* ── Message ────────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="message" className="text-sm font-medium text-[var(--text-primary)]">
           Message <span className="text-[var(--accent)]">*</span>
@@ -129,8 +126,8 @@ export default function ContactForm() {
           id="message"
           rows={5}
           value={formData.message}
-          onChange={(e) => update("message", e.target.value)}
-          placeholder="Tell me about your project or opportunity…"
+          onChange={(event) => updateField("message", event.target.value)}
+          placeholder="Tell me about your project or opportunity..."
           required
           className={[
             "w-full px-4 py-3 rounded-xl text-sm resize-none",
@@ -144,14 +141,12 @@ export default function ContactForm() {
         {errors.message && <p className="text-xs text-red-500 mt-0.5">{errors.message}</p>}
       </div>
 
-      {/* ── Error banner ───────────────────────────────────────────────── */}
       {status === "error" && (
         <p className="text-sm text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 px-4 py-3 rounded-xl">
           Something went wrong. Please try again or email me directly.
         </p>
       )}
 
-      {/* ── Submit ─────────────────────────────────────────────────────── */}
       <Button
         type="submit"
         variant="primary"
@@ -161,7 +156,7 @@ export default function ContactForm() {
         {status === "submitting" ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            Sending…
+            Sending...
           </>
         ) : (
           <>
@@ -173,13 +168,7 @@ export default function ContactForm() {
   );
 }
 
-// ── Reusable text input field ──────────────────────────────────────────────────
-function Field({
-  label, id, type, value, onChange, error, placeholder, required,
-}: {
-  label: string; id: string; type: string; value: string;
-  onChange: (v: string) => void; error?: string; placeholder?: string; required?: boolean;
-}) {
+function Field({ label, id, type, value, onChange, error, placeholder, required }: FieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)]">
@@ -189,7 +178,7 @@ function Field({
         id={id}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
         className={[

@@ -1,10 +1,5 @@
 import nodemailer from "nodemailer";
-
-interface NotificationData {
-  name: string;
-  email: string;
-  message: string;
-}
+import type { ContactSubmission } from "@/lib/contact";
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "",
@@ -15,7 +10,7 @@ const transporter = nodemailer.createTransport({
     : undefined,
 });
 
-export async function sendContactNotification(data: NotificationData) {
+export async function sendContactNotification(data: ContactSubmission) {
   if (!process.env.NOTIFY_EMAIL) {
     throw new Error("NOTIFY_EMAIL is not configured");
   }

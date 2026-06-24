@@ -1,14 +1,10 @@
-interface NotificationData {
-  name: string;
-  email: string;
-  message: string;
-}
+import type { ContactSubmission } from "@/lib/contact";
 
 function getEnv(name: string) {
   return process.env[name] ?? "";
 }
 
-export async function sendTelegramNotification(data: NotificationData, photoUrl?: string) {
+export async function sendTelegramNotification(data: ContactSubmission, photoUrl?: string) {
   const token = getEnv("TELEGRAM_BOT_TOKEN");
   const chatId = getEnv("TELEGRAM_CHAT_ID");
 
